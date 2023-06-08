@@ -17,6 +17,8 @@
 #include "funcdata.hh"
 #include "crc32.hh"
 
+namespace ghidra {
+
 // Table for how to hash opcodes, lumps certain operators (i.e. ADD SUB PTRADD PTRSUB) into one hash
 // zero indicates the operator should be skipped
 const uint4 DynamicHash::transtable[] = {
@@ -234,6 +236,8 @@ void DynamicHash::calcHash(const PcodeOp *op,int4 slot,uint4 method)
 	buildOpUp(markop[opproc]);
       }
       gatherUnmarkedVn();
+      for(;vnproc<markvn.size();++vnproc)
+        buildVnUp(markvn[vnproc]);
       break;
     case 6:
       gatherUnmarkedOp();
@@ -241,6 +245,8 @@ void DynamicHash::calcHash(const PcodeOp *op,int4 slot,uint4 method)
 	buildOpDown(markop[opproc]);
       }
       gatherUnmarkedVn();
+      for(;vnproc<markvn.size();++vnproc)
+        buildVnDown(markvn[vnproc]);
       break;
     default:
       break;
@@ -763,3 +769,5 @@ void DynamicHash::clearTotalPosition(uint8 &h)
   val = ~val;
   h &= val;
 }
+
+} // End namespace ghidra

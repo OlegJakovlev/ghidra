@@ -15,10 +15,9 @@
  */
 package ghidra.app.util.bin.format.elf.info;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import java.io.IOException;
 
 import ghidra.app.util.bin.*;
 import ghidra.app.util.bin.format.elf.*;
@@ -72,7 +71,7 @@ public class StandardElfInfoProducer implements ElfInfoProducer {
 		Program program = elfLoadHelper.getProgram();
 
 		for (Entry<String, ReaderFunc<ElfInfoItem>> noteEntry : STANDARD_READERS.entrySet()) {
-			monitor.checkCanceled();
+			monitor.checkCancelled();
 
 			String sectionName = noteEntry.getKey();
 			ReaderFunc<ElfInfoItem> readFunc = noteEntry.getValue();
@@ -87,9 +86,12 @@ public class StandardElfInfoProducer implements ElfInfoProducer {
 		Memory memory = program.getMemory();
 		for (ElfProgramHeader elfProgramHeader : elfLoadHelper.getElfHeader()
 				.getProgramHeaders(ElfProgramHeaderConstants.PT_NOTE)) {
-			monitor.checkCanceled();
+			monitor.checkCancelled();
 
 			Address addr = elfLoadHelper.findLoadAddress(elfProgramHeader, 0);
+			if (addr == null) {
+				continue;
+			}
 			MemoryBlock memBlock = memory.getBlock(addr);
 			if (memBlock == null) {
 				continue;
@@ -98,7 +100,7 @@ public class StandardElfInfoProducer implements ElfInfoProducer {
 				MemoryByteProvider.createMemoryBlockByteProvider(program.getMemory(), memBlock)) {
 				BinaryReader br = new BinaryReader(bp, !program.getMemory().isBigEndian());
 				while (br.hasNext()) {
-					monitor.checkCanceled();
+					monitor.checkCancelled();
 
 					long start = br.getPointerIndex();
 					ElfNote note = br.readNext(ElfNote::read);

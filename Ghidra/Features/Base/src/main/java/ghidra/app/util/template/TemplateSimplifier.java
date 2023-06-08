@@ -18,13 +18,14 @@ package ghidra.app.util.template;
 import ghidra.GhidraOptions;
 import ghidra.framework.options.Options;
 import ghidra.framework.options.ToolOptions;
+import ghidra.program.model.symbol.NameTransformer;
 import ghidra.util.HelpLocation;
 
 /**
  * Class for simplify names with template data. This class can be used with tool options or
  * as a stand alone configurable simplifier.
  */
-public class TemplateSimplifier {
+public class TemplateSimplifier implements NameTransformer {
 	public static final String SUB_OPTION_NAME = "Templates";
 
 	public static final String SIMPLIFY_TEMPLATES_OPTION =
@@ -71,8 +72,8 @@ public class TemplateSimplifier {
 
 	/**
 	 * Sets the template nesting depth to be simplified. A depth of 0 simplifies the entire 
-	 * template portion of the name (everything in between <>). A depth of 1 leaves one level of
-	 * template information
+	 * template portion of the name (everything in between {@code <>}). A depth of 1 leaves one 
+	 * level of template information
 	 * @param depth the nesting depth
 	 */
 	public void setNestingDepth(int depth) {
@@ -145,6 +146,7 @@ public class TemplateSimplifier {
 	 * @param input the input string to be simplified
 	 * @return a simplified string
 	 */
+	@Override
 	public String simplify(String input) {
 		if (!doSimplify) {
 			return input;
@@ -192,10 +194,13 @@ public class TemplateSimplifier {
 	}
 
 	private String doSimplify(String input, int depth) {
-		StringBuilder builder = new StringBuilder();
 		int pos = 0;
-		TemplateString ts;
-		while ((ts = findTemplateString(input, pos)) != null) {
+		TemplateString ts = findTemplateString(input, pos);
+		if (ts == null) {
+			return input;		// Fast fail if no template characters present
+		}
+		StringBuilder builder = new StringBuilder();
+		do {
 			builder.append(input.substring(pos, ts.start));
 			String template = ts.getTemplate();
 			if (depth == 0) {
@@ -215,7 +220,9 @@ public class TemplateSimplifier {
 				builder.append(">");
 			}
 			pos = ts.end + 1;
+			ts = findTemplateString(input, pos);
 		}
+		while (ts != null);
 		builder.append(input.substring(pos));
 		return builder.toString();
 	}

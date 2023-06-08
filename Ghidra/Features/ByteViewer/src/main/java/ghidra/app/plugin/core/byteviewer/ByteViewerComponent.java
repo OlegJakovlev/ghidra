@@ -65,7 +65,7 @@ public class ByteViewerComponent extends FieldPanel implements FieldMouseListene
 	private boolean indexUpdate = true;
 	private FieldLocation lastFieldLoc;
 
-	private ByteViewerHighlightProvider highlightProvider;
+	private ByteViewerHighlighter highlightProvider = new ByteViewerHighlighter();
 	private int highlightButton = MouseEvent.BUTTON2;
 
 	/**
@@ -79,20 +79,31 @@ public class ByteViewerComponent extends FieldPanel implements FieldMouseListene
 	 */
 	protected ByteViewerComponent(ByteViewerPanel vpanel, ByteViewerLayoutModel layoutModel,
 			DataFormatModel model, int bytesPerLine, FontMetrics fm) {
-		super(layoutModel);
+		super(layoutModel, "Byte Viewer");
+		setFieldDescriptionProvider((l, f) -> getFieldDescription(l, f));
 
 		this.panel = vpanel;
 		this.model = model;
 		this.bytesPerLine = bytesPerLine;
 		this.fm = fm;
 		this.layoutModel = layoutModel;
-		highlightProvider = new ByteViewerHighlightProvider();
 
 		setName(model.getName());
 		initialize();
 
 		// specialized line coloring
 		setBackgroundColorModel(new ByteViewerBackgroundColorModel());
+	}
+
+	private String getFieldDescription(FieldLocation fieldLoc, Field field) {
+		ByteBlockInfo info = indexMap.getBlockInfo(fieldLoc.getIndex(), fieldLoc.getFieldNum());
+		if (info != null) {
+			String modelName = model.getName();
+			return modelName + " format at " +
+				info.getBlock().getLocationRepresentation(info.getOffset()) + ", value = " +
+				field.getText();
+		}
+		return null;
 	}
 
 	@Override
@@ -469,8 +480,7 @@ public class ByteViewerComponent extends FieldPanel implements FieldMouseListene
 			else {
 				++endFieldOffset;
 			}
-			fsel.addRange(
-				new FieldLocation(startLoc.getIndex(), startLoc.getFieldNum(), 0, 0),
+			fsel.addRange(new FieldLocation(startLoc.getIndex(), startLoc.getFieldNum(), 0, 0),
 				new FieldLocation(endIndex, endFieldOffset, 0, 0));
 		}
 		return fsel;

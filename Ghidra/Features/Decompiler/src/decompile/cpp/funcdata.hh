@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __CPUI_FUNCDATA__
-#define __CPUI_FUNCDATA__
+#ifndef __FUNCDATA_HH__
+#define __FUNCDATA_HH__
 
 /// \file funcdata.hh
 /// \brief Utilities for processing data structures associated with a single function
@@ -25,6 +25,8 @@
 #include "merge.hh"
 #include "dynamic.hh"
 #include "unionresolve.hh"
+
+namespace ghidra {
 
 class FlowInfo;
 
@@ -77,6 +79,7 @@ class Funcdata {
   Architecture *glb;		///< Global configuration data
   FunctionSymbol *functionSymbol;	///< The symbol representing \b this function
   string name;			///< Name of function
+  string displayName;		///< Name to display in output
   Address baseaddr;		///< Starting code address of binary data
   FuncProto funcp;		///< Prototype of this function
   ScopeLocal *localmap;		///< Local variables (symbols in the function scope)
@@ -134,9 +137,10 @@ class Funcdata {
   static PcodeOp *findPrimaryBranch(PcodeOpTree::const_iterator iter,PcodeOpTree::const_iterator enditer,
 				    bool findbranch,bool findcall,bool findreturn);
 public:
-  Funcdata(const string &nm,Scope *conf,const Address &addr,FunctionSymbol *sym,int4 sz=0);	///< Constructor
+  Funcdata(const string &nm,const string &disp,Scope *conf,const Address &addr,FunctionSymbol *sym,int4 sz=0);	///< Constructor
   ~Funcdata(void);							///< Destructor
   const string &getName(void) const { return name; }			///< Get the function's local symbol name
+  const string &getDisplayName(void) const { return displayName; }	///< Get the name to display in output
   const Address &getAddress(void) const { return baseaddr; }		///< Get the entry point address
   int4 getSize(void) const { return size; }				///< Get the function body size in bytes
   Architecture *getArch(void) const { return glb; }			///< Get the program/architecture owning \b this function
@@ -682,4 +686,5 @@ extern PcodeOp *cseElimination(Funcdata &data,PcodeOp *op1,PcodeOp *op2);
 extern void cseEliminateList(Funcdata &data,vector< pair<uintm,PcodeOp *> > &list,
 			     vector<Varnode *> &outlist);
 
+} // End namespace ghidra
 #endif

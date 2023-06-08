@@ -26,14 +26,12 @@ import javax.swing.event.*;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.tree.TreePath;
 
-import docking.ActionContext;
-import docking.DockingWindowManager;
+import docking.*;
 import docking.action.DockingAction;
 import docking.action.ToggleDockingAction;
 import docking.event.mouse.GMouseListenerAdapter;
 import docking.menu.MultiActionDockingAction;
 import docking.widgets.OptionDialog;
-import docking.widgets.PopupWindow;
 import docking.widgets.textpane.GHtmlTextPane;
 import docking.widgets.tree.*;
 import docking.widgets.tree.support.GTreeSelectionEvent.EventOrigin;
@@ -179,6 +177,10 @@ public class DataTypesProvider extends ComponentProviderAdapter {
 		// FileEdit group
 		addLocalAction(new LockArchiveAction(plugin)); // Archive
 		addLocalAction(new UnlockArchiveAction(plugin)); // Archive
+
+		// Arch group
+		addLocalAction(new SetArchiveArchitectureAction(plugin)); // Archive
+		addLocalAction(new ClearArchiveArchitectureAction(plugin)); // Archive
 
 		// Repository group : version control actions
 		addVersionControlActions(); // Archive
@@ -344,7 +346,7 @@ public class DataTypesProvider extends ComponentProviderAdapter {
 			Object source = event.getSource();
 			if (source instanceof JTextField || source instanceof JTextPane) {
 				Component component = (Component) source;
-				return new ActionContext(this, source, component);
+				return new DefaultActionContext(this, source, component);
 			}
 
 			Point point = event.getPoint();
@@ -473,15 +475,10 @@ public class DataTypesProvider extends ComponentProviderAdapter {
 				setDataTypeSelected(dt);
 			}
 			else if (type == EventType.ENTERED) {
-				//
-				// The user hovered over the link--show something useful, like the path
-				//
-				JToolTip toolTip = new JToolTip();
-				CategoryPath path = dt.getCategoryPath();
-				toolTip.setTipText(path.toString());
-				PopupWindow popup = new PopupWindow(toolTip);
-				popup.setCloseWindowDelay(10000);
-				popup.showPopup((MouseEvent) event.getInputEvent());
+				previewPane.setToolTipText(dt.getCategoryPath().toString());
+			}
+			else if (type == EventType.EXITED) {
+				previewPane.setToolTipText(null);
 			}
 
 		});
@@ -489,8 +486,8 @@ public class DataTypesProvider extends ComponentProviderAdapter {
 		previewScrollPane = new JScrollPane(previewPane);
 
 		DockingWindowManager.getHelpService()
-				.registerHelp(previewScrollPane,
-					new HelpLocation("DataTypeManagerPlugin", "Preview_Window"));
+			.registerHelp(previewScrollPane,
+				new HelpLocation("DataTypeManagerPlugin", "Preview_Window"));
 	}
 
 	private DataType locateDataType(HyperlinkEvent event) {

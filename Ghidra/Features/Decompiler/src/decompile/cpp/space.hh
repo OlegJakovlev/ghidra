@@ -16,11 +16,13 @@
 /// \file space.hh
 /// \brief Classes for describing address spaces
 
-#ifndef __CPUI_SPACE__
-#define __CPUI_SPACE__
+#ifndef __SPACE_HH__
+#define __SPACE_HH__
 
 #include "error.hh"
 #include "marshal.hh"
+
+namespace ghidra {
 
 /// \brief Fundemental address space types
 ///
@@ -166,8 +168,8 @@ public:
 
   static uintb addressToByte(uintb val,uint4 ws); ///< Scale from addressable units to byte units
   static uintb byteToAddress(uintb val,uint4 ws); ///< Scale from byte units to addressable units
-  static int4 addressToByteInt(int4 val,uint4 ws); ///< Scale int4 from addressable units to byte units
-  static int4 byteToAddressInt(int4 val,uint4 ws); ///< Scale int4 from byte units to addressable units
+  static int8 addressToByteInt(int8 val,uint4 ws); ///< Scale int4 from addressable units to byte units
+  static int8 byteToAddressInt(int8 val,uint4 ws); ///< Scale int4 from byte units to addressable units
   static bool compareByIndex(const AddrSpace *a,const AddrSpace *b);	///< Compare two spaces by their index
 };
 
@@ -528,21 +530,21 @@ inline uintb AddrSpace::byteToAddress(uintb val,uint4 ws) {
   return val/ws;
 }
 
-/// Given an int4 offset into an address space based on the addressable unit size (wordsize),
+/// Given an int8 offset into an address space based on the addressable unit size (wordsize),
 /// convert it into a byte relative offset
 /// \param val is the offset to convert
 /// \param ws is the number of bytes in the addressable word
 /// \return the scaled offset
-inline int4 AddrSpace::addressToByteInt(int4 val,uint4 ws) {
+inline int8 AddrSpace::addressToByteInt(int8 val,uint4 ws) {
   return val*ws;
 }
 
-/// Given an int4 offset in an address space based on bytes, convert it
+/// Given an int8 offset in an address space based on bytes, convert it
 /// into an offset relative to the addressable unit of the space (wordsize)
 /// \param val is the offset to convert
 /// \param ws is the number of bytes in the addressable word
 /// \return the scaled offset
-inline int4 AddrSpace::byteToAddressInt(int4 val,uint4 ws) {
+inline int8 AddrSpace::byteToAddressInt(int8 val,uint4 ws) {
   return val/ws;
 }
 
@@ -554,4 +556,5 @@ inline bool AddrSpace::compareByIndex(const AddrSpace *a,const AddrSpace *b) {
   return (a->index < b->index);
 }
 
+} // End namespace ghidra
 #endif
